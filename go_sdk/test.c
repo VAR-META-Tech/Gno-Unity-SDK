@@ -1,9 +1,9 @@
 #include <stdio.h>
-#include "helloworld.h"
+#include "keygen_sdk.h"
 
 int main() {
-    printf("Using awesome lib from C:\n");
+    printf("Using keygen lib from C:\n");
    
-    //Call Add() - passing integer params, interger result
-    callSDK();
+    char *args = "generate";
+    CallSDK(args);
 }
