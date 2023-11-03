@@ -72,3 +72,13 @@ crashlytics-build.properties
 /[Aa]ssets/[Ss]treamingAssets/aa/*
 go_sdk/keygen_sdk.h
 go_sdk/keygen_sdk.dll
+go_sdk/test
+go_sdk/keygen_sdk.so
+.vscode/settings.json
+go_sdk/data/keys.db/000063.log
+go_sdk/data/keys.db/000065.ldb
+go_sdk/data/keys.db/CURRENT
+go_sdk/data/keys.db/CURRENT.bak
+go_sdk/data/keys.db/LOCK
+go_sdk/data/keys.db/LOG
+go_sdk/data/keys.db/MANIFEST-000064
