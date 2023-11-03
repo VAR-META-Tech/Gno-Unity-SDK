@@ -113,4 +113,31 @@ func printNewInfo(info keys.Info) {
 		keyname, keytype, keyaddr, keypub, keypath)
 }
 
+//export ListKeys
+func ListKeys(result *C.int) *C.char {
+	kb, err := keys.NewKeyBaseFromDir(_baseCfg.Home)
+	if err != nil {
+		return C.CString(err.Error())
+	}
+
+	infos, err := kb.List()
+	if err == nil {
+		printInfos(infos)
+	}
+
+	return C.CString("")
+}
+
+func printInfos(infos []keys.Info) {
+	for i, info := range infos {
+		keyname := info.GetName()
+		keytype := info.GetType()
+		keypub := info.GetPubKey()
+		keyaddr := info.GetAddress()
+		keypath, _ := info.GetPath()
+		fmt.Printf("%d. %s (%s) - addr: %v pub: %v, path: %v",
+			i, keyname, keytype, keyaddr, keypub, keypath)
+	}
+}
+
 func main() {}

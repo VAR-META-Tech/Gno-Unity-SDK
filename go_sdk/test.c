@@ -25,16 +25,23 @@ void AddAccountSDK(char* KEYNAME, char* MnemonicCode){
     }
 }
 
-char* ListAccount(){
-    // char *args = "list";
-    // return CallSDK(args);
+char* ListAccountSDK(){
+    int result;
+    char* error = ListKeys(&result);
+    if (result == 0){
+        printf("List Accounts: %s\n", error);
+        return error;
+    } else {
+        printf("Err: %s\n", error);
+        return "";
+    }
 }
 
 int main() {
     printf("Using keygen lib from C:\n");
     char* code = GenerateMnemonicCode();
     AddAccountSDK("testKey", code);
-    ListAccount();
+    ListAccountSDK();
     return 0;
 }
 
