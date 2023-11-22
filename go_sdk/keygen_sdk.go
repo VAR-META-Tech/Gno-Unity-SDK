@@ -59,7 +59,7 @@ func Generate(customEntropy bool, inputEntropy *C.char, result *C.int) *C.char {
 }
 
 //export AddAccount
-func AddAccount(cname *C.char, cmnemonic *C.char, result *C.int) *C.char {
+func AddAccount(cname *C.char, cmnemonic *C.char, index C.int, result *C.int) *C.char {
 	var (
 		kb              keys.Keybase
 		err             error
@@ -68,6 +68,7 @@ func AddAccount(cname *C.char, cmnemonic *C.char, result *C.int) *C.char {
 
 	kb, err = keys.NewKeyBaseFromDir(_baseCfg.Home)
 	if err != nil {
+		*result = 1
 		return C.CString(err.Error())
 	}
 
@@ -77,67 +78,74 @@ func AddAccount(cname *C.char, cmnemonic *C.char, result *C.int) *C.char {
 	if err == nil {
 		// account exists, ask for user confirmation
 		err = errors.New("account exists")
-		// return C.CString(err.Error())
+		*result = 1
+		return C.CString(err.Error())
 	}
 
 	// Get bip39 mnemonic
 	mnemonic := C.GoString(cmnemonic)
 	const bip39Passphrase string = "" // XXX research.
 	var account uint64
-	var index uint64
 
 	if len(mnemonic) == 0 {
 		mnemonic, err = client.GenerateMnemonic(mnemonicEntropySize)
 		if err != nil {
+			*result = 1
 			return C.CString(err.Error())
 		}
 	}
 
 	info, err := kb.CreateAccount(name, mnemonic, bip39Passphrase, encryptPassword, uint32(account), uint32(index))
 	if err != nil {
+		*result = 1
 		return C.CString(err.Error())
 	}
-	printNewInfo(info)
-
-	return C.CString("")
+	*result = 0
+	return C.CString(printNewInfo(info))
 }
 
-func printNewInfo(info keys.Info) {
+func printNewInfo(info keys.Info) string {
 	keyname := info.GetName()
 	keytype := info.GetType()
 	keypub := info.GetPubKey()
 	keyaddr := info.GetAddress()
 	keypath, _ := info.GetPath()
 
-	fmt.Printf("* %s (%s) - addr: %v pub: %v, path: %v",
+	result := fmt.Sprintf("* %s (%s) - addr: %v pub: %v, path: %v",
 		keyname, keytype, keyaddr, keypub, keypath)
+	return result
 }
 
 //export ListKeys
 func ListKeys(result *C.int) *C.char {
 	kb, err := keys.NewKeyBaseFromDir(_baseCfg.Home)
 	if err != nil {
+		*result = 1
 		return C.CString(err.Error())
 	}
 
 	infos, err := kb.List()
-	if err == nil {
-		printInfos(infos)
+	if err != nil {
+		*result = 1
+		return C.CString(err.Error())
 	}
-
-	return C.CString("")
+	*result = 0
+	return C.CString(printInfos(infos))
 }
 
-func printInfos(infos []keys.Info) {
+func printInfos(infos []keys.Info) string {
+	result := ""
 	for i, info := range infos {
 		keyname := info.GetName()
 		keytype := info.GetType()
 		keypub := info.GetPubKey()
 		keyaddr := info.GetAddress()
 		keypath, _ := info.GetPath()
-		fmt.Printf("%d. %s (%s) - addr: %v pub: %v, path: %v",
+
+		result += fmt.Sprintf("%d. %s (%s) - addr: %v pub: %v, path: %v",
 			i, keyname, keytype, keyaddr, keypub, keypath)
 	}
+	return result
 }
 
 func main() {}

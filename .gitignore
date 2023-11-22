@@ -89,3 +89,9 @@ go_sdk/data/keys.db/000099.ldb
 go_sdk/data/keys.db/000100.log
 go_sdk/data/keys.db/MANIFEST-000101
 go_sdk/data/
+UnitySample/Library/*
+UnitySample/Logs/*
+UnitySample/data/*
+UnitySample/obj/*
+UnitySample/Temp/*
+UnitySample/UserSettings/*

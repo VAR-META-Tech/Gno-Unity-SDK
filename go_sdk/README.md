@@ -8,7 +8,7 @@ go build -o keygen_sdk.so  -buildmode=c-shared ./keygen_sdk.go
 
 #Build For Test 
 #Windows
-gcc -o test test.c ./helloworld.dll
+gcc -o test test.c ./keygen_sdk.dll
 #Mac Os
 gcc -o test test.c ./keygen_sdk.so  
 
