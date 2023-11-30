@@ -1,6 +1,6 @@
 module var/gno_sdk
 
-go 1.21.3
+go 1.21.4
 
 require (
 	github.com/btcsuite/btcd v0.22.0-beta.0.20220111032746-97732e52810c // indirect

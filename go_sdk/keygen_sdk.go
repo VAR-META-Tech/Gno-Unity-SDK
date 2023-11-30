@@ -3,12 +3,13 @@ package main
 import "C"
 
 import (
-	"errors"
 	"fmt"
 
+	rpcclient "github.com/gnolang/gno/tm2/pkg/bft/rpc/client"
 	"github.com/gnolang/gno/tm2/pkg/crypto/bip39"
 	"github.com/gnolang/gno/tm2/pkg/crypto/keys"
 	"github.com/gnolang/gno/tm2/pkg/crypto/keys/client"
+	"github.com/gnolang/gno/tm2/pkg/errors"
 )
 
 const (
@@ -17,6 +18,17 @@ const (
 
 type baseCfg struct {
 	client.BaseOptions
+}
+
+type queryCfg struct {
+	rootCfg *baseCfg
+
+	data   string
+	height int64
+	prove  bool
+
+	// internal
+	path string
 }
 
 var _baseCfg baseCfg
@@ -146,6 +158,52 @@ func printInfos(infos []keys.Info) string {
 			i, keyname, keytype, keyaddr, keypub, keypath)
 	}
 	return result
+}
+
+//export queryHandler
+func queryHandler(cRemoteUrl *C.char, cPath *C.char, result *C.int) *C.char {
+	cfg := &queryCfg{
+		rootCfg: &_baseCfg,
+	}
+	remote := C.GoString(cRemoteUrl)
+	if remote == "" || remote == "y" {
+		*result = 1
+		return C.CString("missing remote url")
+	}
+	cfg.path = C.GoString(cPath)
+
+	data := []byte(cfg.data)
+	opts2 := rpcclient.ABCIQueryOptions{
+		// Height: height, XXX
+		// Prove: false, XXX
+	}
+	cli := rpcclient.NewHTTP(remote, "/websocket")
+	qres, err := cli.ABCIQueryWithOptions(
+		cfg.path, data, opts2)
+	if err != nil {
+		*result = 1
+		return C.CString(errors.Wrap(err, "querying").Error())
+	}
+
+	if err != nil {
+		*result = 1
+		return C.CString(err.Error())
+	}
+
+	if qres.Response.Error != nil {
+		return C.CString(qres.Response.Error.Error())
+	}
+
+	resdata := qres.Response.Data
+	// XXX in general, how do we know what to show?
+	// proof := qres.Response.Proof
+	height := qres.Response.Height
+	response := fmt.Sprintf("height: %d\ndata: %s\n",
+		height,
+		string(resdata))
+
+	*result = 0
+	return C.CString(response)
 }
 
 func main() {}
