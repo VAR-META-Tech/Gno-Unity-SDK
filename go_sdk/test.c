@@ -50,8 +50,8 @@
 // }
 
 enum {
-    Success = 0,
-    Fail = 1
+    Success = 1,
+    Fail = 0
 };
 
 int main() {
@@ -60,15 +60,28 @@ int main() {
     // AddAccountSDK("testKey", code);
     // ListAccountSDK();
     // QueryAccountBalance();
-    int ret = SetRemote("192.168.1.1");
+    int ret = SetRemote("testnet.gno.berty.io:26657");
     if (ret == Success){
-        printf("Success\n");
+        printf("Set Remote Success\n");
     } else {
-        printf("Fail\n");
+        printf("Set Remote Fail\n");
     }
     printf("Remote is %s \n",GetRemote());
 
-    printf("GenerateRecoveryPhrase is %s \n",GenerateRecoveryPhrase());
+    SetChainID("dev");
+
+    char* chainID = GetChainID();
+
+    printf("chainID %d\n",chainID);
+
+    if (!HasKeyByName("test2")){
+
+        char* mnemo = GenerateRecoveryPhrase();
+
+        printf("GenerateRecoveryPhrase is %s \n",mnemo);
+
+        CreateAccount("test2", "duty theme supreme path potato end net jump casino bunker material sense target patient junk series cover tumble material foster quantum juice celery race", "", "", 0, 0);
+    }
 
     int len;
 
@@ -80,9 +93,19 @@ int main() {
             KeyInfo *keyInfo = keyInfos[i];
             // Do something with keyInfo, e.g., print it
             printf("Key Name: %s\n", keyInfo->Name);
-            // Remember that you will need to free keyInfo->Name
-            // and any other allocated fields within keyInfo if necessary
+            printf("Key Type: %d\n", keyInfo->Type);
+            printf("Key Address: %s\n", keyInfo->Address);
+            printf("Key PubKey: %s\n", keyInfo->PubKey);
         }
+    }
+
+    UserAccount* user = SelectAccount("test2");
+    printf("User name: %s\n", user->Info->Name);
+    printf("User pass: %s\n", user->Password);
+
+    BaseAccount* acc = QueryAccount(user->Info->Address);
+    if (acc){
+        printf("User coins length %d\n",acc->Coins->Length);
     }
     return 0;
 }

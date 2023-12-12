@@ -5,7 +5,7 @@ package main
 
 // If crypto.Address and crypto.PubKey are fixed-size byte arrays, define their sizes
 #define ADDRESS_SIZE 20 // Example size, adjust according to actual crypto.Address size
-#define PUBKEY_SIZE  32 // Example size, adjust according to actual crypto.PubKey size
+#define PUBKEY_SIZE  58 // Example size, adjust according to actual crypto.PubKey size
 
 // Define a C-compatible KeyInfo struct
 typedef struct {
@@ -65,6 +65,7 @@ var serviceEx, _ = service.NewGnoNativeService()
 //export SetRemote
 func SetRemote(remote *C.char) C.int {
 	serviceEx.Client.RPCClient = rpcclient.NewHTTP(C.GoString(remote), "/websocket")
+	serviceEx.Remote = C.GoString(remote)
 	return Success
 }
 
@@ -111,19 +112,42 @@ func GenerateRecoveryPhrase() *C.char {
 
 // ToCKeyInfo converts KeyInfo to its C representation.
 func convertKeyInfo(key crypto_keys.Info) *C.KeyInfo {
-	var cKeyInfo C.KeyInfo
+	// Allocate memory for KeyInfo in C.
+	cKeyInfo := (*C.KeyInfo)(C.malloc(C.sizeof_KeyInfo))
+	if cKeyInfo == nil {
+		// Handle allocation failure if needed
+		return nil
+	}
+
+	// Set fields in the KeyInfo struct.
 	cKeyInfo.Type = C.uint32_t(key.GetType())
-	cKeyInfo.Name = C.CString(key.GetName())
+	cKeyInfo.Name = C.CString(key.GetName()) // This will need to be freed in C.
+
+	// Copy the public key bytes.
 	pubKeyBytes := key.GetPubKey().Bytes()
+	if len(pubKeyBytes) > len(cKeyInfo.PubKey) {
+		// Handle error: the public key is too big for the allocated array.
+		// C.free(unsafe.Pointer(cKeyInfo))
+		return nil
+	}
 	for i, b := range pubKeyBytes {
 		cKeyInfo.PubKey[i] = C.uint8_t(b)
 	}
+
+	// Copy the address bytes.
 	addressBytes := key.GetAddress().Bytes()
+	if len(addressBytes) > len(cKeyInfo.Address) {
+		// Handle error: the address is too big for the allocated array.
+		// C.free(unsafe.Pointer(cKeyInfo.Name))
+		// C.free(unsafe.Pointer(cKeyInfo))
+		return nil
+	}
 	for i, b := range addressBytes {
 		cKeyInfo.Address[i] = C.uint8_t(b)
 	}
 
-	return &cKeyInfo
+	// Return the heap-allocated KeyInfo.
+	return cKeyInfo
 }
 
 //export ListKeyInfo
@@ -256,7 +280,6 @@ func CreateAccount(nameOrBech32 *C.char, mnemonic *C.char, bip39Passwd *C.char, 
 func SelectAccount(nameOrBech32 *C.char) *C.UserAccount {
 	serviceEx.Logger.Debug("SelectAccount called", zap.String("NameOrBech32", C.GoString(nameOrBech32)))
 
-	// The key may already be in s.userAccounts, but the info may have changed on disk. So always get from disk.
 	key, err := getSigner().Keybase.GetByNameOrAddress(C.GoString(nameOrBech32))
 	if err != nil {
 		serviceEx.Logger.Debug("SelectAccount", zap.String("error", err.Error()))
@@ -264,8 +287,14 @@ func SelectAccount(nameOrBech32 *C.char) *C.UserAccount {
 	}
 
 	info := convertKeyInfo(key)
+	if info == nil {
+		// Handle case where convertKeyInfo fails.
+		return nil
+	}
 
 	serviceEx.Lock.Lock()
+	defer serviceEx.Lock.Unlock()
+
 	account, ok := serviceEx.UserAccounts[C.GoString(nameOrBech32)]
 	if !ok {
 		account = &service.UserAccount{}
@@ -273,14 +302,24 @@ func SelectAccount(nameOrBech32 *C.char) *C.UserAccount {
 	}
 	account.KeyInfo = key
 	serviceEx.ActiveAccount = account
-	serviceEx.Lock.Unlock()
 
 	getSigner().Account = C.GoString(nameOrBech32)
 	getSigner().Password = account.Password
-	return &C.UserAccount{
-		Info:     info,
-		Password: C.CString(account.Password),
+
+	// Allocate memory for UserAccount in C.
+	cUserAccount := (*C.UserAccount)(C.malloc(C.sizeof_UserAccount))
+	if cUserAccount == nil {
+		// Handle allocation failure if needed
+		// C.free(unsafe.Pointer(info.Name)) // Free the CString allocated in convertKeyInfo
+		// C.free(unsafe.Pointer(info))      // Free the KeyInfo struct
+		return nil
 	}
+
+	// Set fields in the UserAccount struct.
+	cUserAccount.Info = info
+	cUserAccount.Password = C.CString(account.Password) // This will need to be freed in C.
+
+	return cUserAccount
 }
 
 //export SetPassword
@@ -319,52 +358,102 @@ func GetActiveAccount() *C.UserAccount {
 	}
 
 	info := convertKeyInfo(account.KeyInfo)
-
-	return &C.UserAccount{
-		Info:     info,
-		Password: C.CString(account.Password),
+	if info == nil {
+		// Handle case where convertKeyInfo fails.
+		return nil
 	}
+
+	// Allocate memory for UserAccount in C.
+	cUserAccount := (*C.UserAccount)(C.malloc(C.sizeof_UserAccount))
+	if cUserAccount == nil {
+		// Handle allocation failure if needed
+		// C.free(unsafe.Pointer(info.Name)) // Free the CString allocated in convertKeyInfo
+		// C.free(unsafe.Pointer(info))      // Free the KeyInfo struct
+		return nil
+	}
+
+	// Set fields in the UserAccount struct.
+	cUserAccount.Info = info
+	cUserAccount.Password = C.CString(account.Password) // This will need to be freed in C.
+
+	return cUserAccount
 }
 
 //export QueryAccount
 func QueryAccount(address *C.uint8_t) *C.BaseAccount {
-	serviceEx.Logger.Debug("QueryAccount", zap.ByteString("address", C.GoBytes(unsafe.Pointer(address), C.ADDRESS_SIZE)))
+	addressData := crypto.AddressFromBytes(C.GoBytes(unsafe.Pointer(address), C.ADDRESS_SIZE))
+	serviceEx.Logger.Debug("QueryAccount", zap.String("address", addressData.String()))
 
-	// gnoclient wants the bech32 address.
-	account, _, err := serviceEx.Client.QueryAccount(crypto.AddressFromBytes(C.GoBytes(unsafe.Pointer(address), C.ADDRESS_SIZE)))
+	account, _, err := serviceEx.Client.QueryAccount(addressData)
 	if err != nil {
 		serviceEx.Logger.Debug("QueryAccount", zap.String("error", err.Error()))
 		return nil
 	}
 
-	cCoins := (*C.Coins)(C.malloc(C.sizeof_Coins))
-	cCoins.Length = C.size_t(len(account.Coins))
-	cCoins.Array = (*C.Coin)(C.malloc(C.sizeof_Coin * cCoins.Length))
+	// Allocate memory for BaseAccount in C.
+	cAccount := (*C.BaseAccount)(C.malloc(C.sizeof_BaseAccount))
+	if cAccount == nil {
+		// Handle allocation failure if needed
+		return nil
+	}
 
-	cCoinPtr := cCoins.Array
+	// Allocate memory for Coins in C.
+	cAccount.Coins = (*C.Coins)(C.malloc(C.sizeof_Coins))
+	if cAccount.Coins == nil {
+		// Handle allocation failure if needed
+		// C.free(unsafe.Pointer(cAccount))
+		return nil
+	}
+	cAccount.Coins.Length = C.size_t(len(account.Coins))
+	cAccount.Coins.Array = (*C.Coin)(C.malloc(C.sizeof_Coin * cAccount.Coins.Length))
+	if cAccount.Coins.Array == nil {
+		// Handle allocation failure if needed
+		// C.free(unsafe.Pointer(cAccount.Coins))
+		// C.free(unsafe.Pointer(cAccount))
+		return nil
+	}
+
+	cCoinPtr := cAccount.Coins.Array
 	for _, coin := range account.Coins {
 		// Allocate and set the C string equivalents
 		cCoinPtr.Denom = C.CString(coin.Denom)
 		cCoinPtr.Amount = C.uint64_t(coin.Amount)
-
 		// Move the pointer to the next array element; this is equivalent to incrementing an array index
 		cCoinPtr = (*C.Coin)(unsafe.Pointer(uintptr(unsafe.Pointer(cCoinPtr)) + C.sizeof_Coin))
 	}
 
-	var cAccount C.BaseAccount
+	// Copy the account address bytes to the C struct.
 	addressBytes := account.Address.Bytes()
+	if len(addressBytes) > len(cAccount.Address) {
+		// Handle error: the address is too big for the allocated array.
+		// Remember to free all previously allocated memory.
+		// C.free(unsafe.Pointer(cAccount.Coins.Array))
+		// C.free(unsafe.Pointer(cAccount.Coins))
+		// C.free(unsafe.Pointer(cAccount))
+		return nil
+	}
 	for i, b := range addressBytes {
 		cAccount.Address[i] = C.uint8_t(b)
 	}
-	cAccount.Coins = cCoins
+
+	// Copy the public key bytes to the C struct.
 	pubKeyBytes := account.PubKey.Bytes()
+	if len(pubKeyBytes) > len(cAccount.PubKey) {
+		// Handle error: the public key is too big for the allocated array.
+		// Remember to free all previously allocated memory.
+		// C.free(unsafe.Pointer(cAccount.Coins.Array))
+		// C.free(unsafe.Pointer(cAccount.Coins))
+		// C.free(unsafe.Pointer(cAccount))
+		return nil
+	}
 	for i, b := range pubKeyBytes {
 		cAccount.PubKey[i] = C.uint8_t(b)
 	}
+
 	cAccount.AccountNumber = C.uint64_t(account.AccountNumber)
 	cAccount.Sequence = C.uint64_t(account.Sequence)
 
-	return &cAccount
+	return cAccount
 }
 
 //export DeleteAccount
