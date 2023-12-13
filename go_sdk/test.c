@@ -1,95 +1,52 @@
 #include <stdio.h>
-#include <stdlib.h> 
+#include <stdlib.h>
 #include <string.h>
 #include "keygen_sdk.h"
 
-// char* GenerateMnemonicCode(){
-//     int result;
-//     char* mnemonic = Generate(0,"",&result);
-//     if (result == 0){
-//         printf("Mnemonic: %s\n", mnemonic);
-//         return mnemonic;
-//     } else {
-//         printf("Err: %s\n", mnemonic);
-//         return "";
-//     }
-// }
-
-// void AddAccountSDK(char* KEYNAME, char* MnemonicCode){
-//     int result;
-//     char* err = AddAccount(KEYNAME, MnemonicCode, 0, &result);
-//     if (result == 0){
-//         printf("Account Added\n");
-//     } else {
-//         printf("Err: %s\n", err);
-//     }
-// }
-
-// char* ListAccountSDK(){
-//     int result;
-//     char* error = ListKeys(&result);
-//     if (result == 0){
-//         printf("List Accounts: %s\n", error);
-//         return error;
-//     } else {
-//         printf("Err: %s\n", error);
-//         return "";
-//     }
-// }
-
-// char* QueryAccountBalance(){
-//     int result;
-//     char* error = queryHandler("test3.gno.land:36657","auth/accounts/g1xluae6ppak2dx69j3ypsne4qydkrf303khaz9p",   &result);
-//     if (result == 0){
-//         printf("Balance Accounts: %s\n", error);
-//         return error;
-//     } else {
-//         printf("Err: %s\n", error);
-//         return "";
-//     }
-// }
-
-enum {
+enum
+{
     Success = 1,
     Fail = 0
 };
 
-int main() {
-    printf("Using keygen lib from C:\n");
-    // char* code = GenerateMnemonicCode();
-    // AddAccountSDK("testKey", code);
-    // ListAccountSDK();
-    // QueryAccountBalance();
+int main()
+{
     int ret = SetRemote("testnet.gno.berty.io:26657");
-    if (ret == Success){
+    if (ret == Success)
+    {
         printf("Set Remote Success\n");
-    } else {
+    }
+    else
+    {
         printf("Set Remote Fail\n");
     }
-    printf("Remote is %s \n",GetRemote());
+    printf("Remote is %s \n", GetRemote());
 
     SetChainID("dev");
 
-    char* chainID = GetChainID();
+    char *chainID = GetChainID();
 
-    printf("chainID %d\n",chainID);
+    printf("chainID %d\n", chainID);
 
-    if (!HasKeyByName("test2")){
+    if (!HasKeyByName("test"))
+    {
 
-        char* mnemo = GenerateRecoveryPhrase();
+        char *mnemo = GenerateRecoveryPhrase();
 
-        printf("GenerateRecoveryPhrase is %s \n",mnemo);
+        printf("GenerateRecoveryPhrase is %s \n", mnemo);
 
-        CreateAccount("test2", "duty theme supreme path potato end net jump casino bunker material sense target patient junk series cover tumble material foster quantum juice celery race", "", "", 0, 0);
+        CreateAccount("test", "source bonus chronic canvas draft south burst lottery vacant surface solve popular case indicate oppose farm nothing bullet exhibit title speed wink action roast", "", "", 0, 0);
     }
 
     int len;
 
     KeyInfo **keyInfos = ListKeyInfo(&len);
 
-    if (keyInfos != NULL) {
+    if (keyInfos != NULL)
+    {
         // Use the keyInfos array
-        for (int i = 0; i < len; ++i) {
+        for (int i = 0; i < len; ++i)
+        {
             KeyInfo *keyInfo = keyInfos[i];
             // Do something with keyInfo, e.g., print it
             printf("Key Name: %s\n", keyInfo->Name);
@@ -99,14 +56,17 @@ int main() {
         }
     }
 
-    UserAccount* user = SelectAccount("test2");
+    UserAccount *user = SelectAccount("test");
     printf("User name: %s\n", user->Info->Name);
     printf("User pass: %s\n", user->Password);
 
-    BaseAccount* acc = QueryAccount(user->Info->Address);
-    if (acc){
-        printf("User coins length %d\n",acc->Coins->Length);
+    BaseAccount *acc = QueryAccount(user->Info->Address);
+    if (acc)
+    {
+        printf("User coins count: %d\n", acc->Coins->Length);
+        for (int i =0; i < acc->Coins->Length; i++){
+            printf("%d, %s coins have %d\n", i+1, acc->Coins->Array[i].Denom, acc->Coins->Array[i].Amount);
+        }
     }
     return 0;
 }
-

@@ -436,18 +436,20 @@ func QueryAccount(address *C.uint8_t) *C.BaseAccount {
 		cAccount.Address[i] = C.uint8_t(b)
 	}
 
-	// Copy the public key bytes to the C struct.
-	pubKeyBytes := account.PubKey.Bytes()
-	if len(pubKeyBytes) > len(cAccount.PubKey) {
-		// Handle error: the public key is too big for the allocated array.
-		// Remember to free all previously allocated memory.
-		// C.free(unsafe.Pointer(cAccount.Coins.Array))
-		// C.free(unsafe.Pointer(cAccount.Coins))
-		// C.free(unsafe.Pointer(cAccount))
-		return nil
-	}
-	for i, b := range pubKeyBytes {
-		cAccount.PubKey[i] = C.uint8_t(b)
+	// Copy the public key bytes to the C struct if a public key is present.
+	if account.PubKey != nil {
+		pubKeyBytes := account.PubKey.Bytes()
+		if len(pubKeyBytes) > len(cAccount.PubKey) {
+			// Handle error: the public key is too big for the allocated array.
+			// Remember to free all previously allocated memory.
+			// C.free(unsafe.Pointer(cAccount.Coins.Array))
+			// C.free(unsafe.Pointer(cAccount.Coins))
+			// C.free(unsafe.Pointer(cAccount))
+			return nil
+		}
+		for i, b := range pubKeyBytes {
+			cAccount.PubKey[i] = C.uint8_t(b)
+		}
 	}
 
 	cAccount.AccountNumber = C.uint64_t(account.AccountNumber)
