@@ -11,7 +11,7 @@ enum
 
 int main()
 {
-    int ret = SetRemote("testnet.gno.berty.io:26657");
+    int ret = SetRemote("test3.gno.land:36657");
     if (ret == Success)
     {
         printf("Set Remote Success\n");
@@ -51,8 +51,8 @@ int main()
             // Do something with keyInfo, e.g., print it
             printf("Key Name: %s\n", keyInfo->Name);
             printf("Key Type: %d\n", keyInfo->Type);
-            printf("Key Address: %s\n", keyInfo->Address);
-            printf("Key PubKey: %s\n", keyInfo->PubKey);
+            // printf("Key Address: %s\n", keyInfo->Address);
+            // printf("Key PubKey: %s\n", keyInfo->PubKey);
         }
     }
 
