@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "keygen_sdk.h"
+#include "gno_native_sdk.h"
 
 enum
 {
@@ -44,6 +44,7 @@ int main()
 
     if (keyInfos != NULL)
     {
+        printf("keyInfos Name: %s\n", keyInfos);
         // Use the keyInfos array
         for (int i = 0; i < len; ++i)
         {

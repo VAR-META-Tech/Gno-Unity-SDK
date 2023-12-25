@@ -6,14 +6,37 @@ using System;
 
 public class SDKWrapper 
 {
-    const string DllPath = "/Users/anhnph/Downloads/Work/Products/Gno-Unity-SDK/go_sdk/keygen_sdk.so";
+    const string DllPath = "/Users/baoquoc/VarMeta/Projects/AR_VR/Gno-Unity-SDK/go_sdk/gno_native_sdk.so";
 
     [DllImport(DllPath)]
-    public static extern IntPtr Generate(byte customEntropy, string inputEntropy, out int result);
+    public static extern int SetRemote(string remote);
 
     [DllImport(DllPath)]
-    public static extern IntPtr AddAccount(string cname, string cmnemonic, int index, out int result);
+    public static extern string GetRemote();
 
     [DllImport(DllPath)]
-    public static extern IntPtr ListKeys(out int result);
+    public static extern int SetChainID(string chainID);
+
+    [DllImport(DllPath)]
+    public static extern string GetChainID();
+
+    [DllImport(DllPath)]
+    public static extern int HasKeyByName(string name);
+
+    [DllImport(DllPath)]
+    public static extern string GenerateRecoveryPhrase();
+
+    [DllImport(DllPath)]
+    public static extern IntPtr ListKeyInfo(out int length);
+
+    [DllImport(DllPath)]
+    public static extern IntPtr CreateAccount(
+        string nameOrBech32,
+        string mnemonic,
+        string bip39Passwd,
+        string password,
+        int account,
+        int index
+    );
+
 }

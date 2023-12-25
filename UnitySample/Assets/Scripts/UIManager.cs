@@ -21,22 +21,61 @@ public class UIManager : MonoBehaviour
     [SerializeField]
     public TMP_Dropdown _listKeyDropdown;
 
-    public class KeyInfo
+    public static class Constants
     {
-        public int KeyNumber { get; set; }
-        public string KeyName { get; set; }
-        public string KeyType { get; set; }
-        public string Address { get; set; }
-        public string PublicKey { get; set; }
-        public string Path { get; set; }
+        public const int PUBKEY_SIZE = 58;
+        public const int ADDRESS_SIZE = 20;
     }
 
-    private string mnemonicCode;
-    private List<KeyInfo> keyInfos;
+    [SerializeField] private PanelTab accountTab;
+    [SerializeField] private PanelTab sendTransactionTab;
+    [SerializeField] private PanelTab mintNFTTab;
+    [SerializeField] private PanelTab nftLoaderTab;
+    [SerializeField] private PanelTab addAccountTab;
+    [Space]
+    [Header("Infos")]
+    [SerializeField] private TMP_Dropdown walletListDropDown;
+    [SerializeField] private TMP_Dropdown networkDropDown;
+
+    [Header("Add Account")]
+    [SerializeField] private TMP_InputField createdMnemonicInputField;
+    [SerializeField] private TMP_InputField importMnemonicInputField;
+
+    [StructLayout(LayoutKind.Sequential)]
+    public struct KeyInfo
+    {
+        public uint Type;
+        [MarshalAs(UnmanagedType.LPStr)]
+        public string Name;
+        [MarshalAs(UnmanagedType.ByValArray, SizeConst = Constants.PUBKEY_SIZE)]
+        public byte[] PubKey;
+        [MarshalAs(UnmanagedType.ByValArray, SizeConst = Constants.ADDRESS_SIZE)]
+        public byte[] Address;
+    }
+
+
+    public static string ByteArrayToHexString(byte[] bytes)
+    {
+        return BitConverter.ToString(bytes).Replace("-", "").ToLower();
+    }
+    public class ResponseInfo
+    {
+        public Status status;
+        public string message;
+        public enum Status
+        {
+            Success,
+            Pending,
+            NotFound,
+            Failed,
+            Warning
+        }
+    }
+    private string mnemonicCode = "source bonus chronic canvas draft south burst lottery vacant surface solve popular case indicate oppose farm nothing bullet exhibit title speed wink action roast";
     // Start is called before the first frame update
     void Start()
     {
-
+        InitStatusCheck();
     }
 
     // Update is called once per frame
@@ -45,104 +84,76 @@ public class UIManager : MonoBehaviour
         
     }
 
-    public void onGenerateButtonClicked()
+    void InitStatusCheck()
     {
-        byte customEntropy = 0;
-        string inputEntropy = "";
-        int result;
-
-        IntPtr ptr = SDKWrapper.Generate(customEntropy, inputEntropy, out result);
-        string generateResult = Marshal.PtrToStringAnsi(ptr);
-
-        Debug.Log($"Generate result: {generateResult}");
-        Debug.Log($"Int result: {result}");
-        _mnemonicInput.text = generateResult;
-        if (generateResult.Length > 0)
+        if (PlayerPrefs.GetString("Gno.land") != string.Empty)
         {
-            mnemonicCode = generateResult;
+            ToggleEmptyState(false);
+        }
+        else
+        {
+            ToggleEmptyState(true);
         }
     }
 
+    public void ToggleEmptyState(bool _empty)
+    {
+        accountTab.DeActive(_empty);
+        sendTransactionTab.DeActive(_empty);
+        mintNFTTab.DeActive(_empty);
+        nftLoaderTab.DeActive(_empty);    
+    }
     public void onAddAccountButtonClicked()
     {
-        listKeys();
-        if (mnemonicCode.Length > 0)
-        {
-            string cname = "testKey";
+        // Set the remote endpoint for blockchain interactions.
+            int ret = SDKWrapper.SetRemote("testnet.gno.berty.io:26657");
+            Debug.Log($"Remote is {SDKWrapper.GetRemote()}");
 
-            if (_nameInput.text.Length > 0)
+            // Set the chain ID for subsequent operations.
+            SDKWrapper.SetChainID("dev");
+            Debug.Log($"chainID {SDKWrapper.GetChainID()}");
+
+            // Refresh the list of keys/accounts.
+
+            // Check if mnemonic code is present and has length greater than 0.
+            if (!string.IsNullOrEmpty(mnemonicCode))
             {
-                cname = _nameInput.text;
+                // Default account name.
+                string cname = "testKey";
+
+                // If a name has been entered, use that instead.
+                if (!string.IsNullOrEmpty(_nameInput.text))
+                {
+                    cname = _nameInput.text;
+                }
+
+                // Determine the index for the new account.
+                int index = 0;
+
+                // Create another account with the given name and mnemonic.
+               IntPtr keyInfoPtr = SDKWrapper.CreateAccount(cname, mnemonicCode, "", "", index, index);
+                   if (keyInfoPtr != IntPtr.Zero)
+                   {
+                        KeyInfo keyInfo = Marshal.PtrToStructure<KeyInfo>(keyInfoPtr);
+                        string addressString = ByteArrayToHexString(keyInfo.Address);
+                        Debug.Log($"addressString {addressString}");
+                        walletListDropDown.ClearOptions();
+                        walletListDropDown.value = 0;
+                        createdMnemonicInputField.text = "Go.land";
+
+                        List<string> options = new List<string>();
+                        options.Add(addressString);
+                        walletListDropDown.AddOptions(options);
+                        ToggleEmptyState(false);
             }
 
-            int result;
-            int index = 0;
-            if (keyInfos.Count > 0)
+            // Refresh the key list to show the new account.
+        }
+            else
             {
-                index = keyInfos.Count;
+                Debug.LogError("Missing mnemonic code.");
             }
-
-            IntPtr ptr = SDKWrapper.AddAccount(cname, mnemonicCode, index, out result);
-            string addAccountResult = Marshal.PtrToStringAnsi(ptr);
-
-            Debug.Log($"AddAccount result: {addAccountResult}");
-            Debug.Log($"Int result: {result}");
-
-            listKeys();
-        } else
-        {
-            Debug.Log($"Missing mnemonic");
-        }
     }
 
-    public List<KeyInfo> ParseKeyInfo(string keyInfoString)
-    {
-        var regex = new Regex(@"(\d+)\.\s([^ ]+)\s\(([^)]+)\)\s-\saddr:\s([^ ]+)\spub:\s([^,]+),\spath:\s([^1-9]+)");
-        var matches = regex.Matches(keyInfoString);
-
-        keyInfos = new List<KeyInfo>();
-
-        foreach (Match match in matches)
-        {
-            keyInfos.Add(new KeyInfo
-            {
-                KeyNumber = int.Parse(match.Groups[1].Value),
-                KeyName = match.Groups[2].Value,
-                KeyType = match.Groups[3].Value,
-                Address = match.Groups[4].Value,
-                PublicKey = match.Groups[5].Value,
-                Path = match.Groups[6].Value
-            });
-        }
-
-        return keyInfos;
-    }
-
-    public void listKeys()
-    {
-        int result;
-        IntPtr ptr = SDKWrapper.ListKeys(out result);
-        string listKeysResult = Marshal.PtrToStringAnsi(ptr);
-
-        List<KeyInfo> keyInfos = ParseKeyInfo(listKeysResult);
-
-        foreach (var keyInfo in keyInfos)
-        {
-            Debug.Log($"Key number: {keyInfo.KeyNumber}");
-            Debug.Log($"Key name: {keyInfo.KeyName}");
-            Debug.Log($"Key type: {keyInfo.KeyType}");
-            Debug.Log($"Address: {keyInfo.Address}");
-            Debug.Log($"Public key: {keyInfo.PublicKey}");
-            Debug.Log($"Path: {keyInfo.Path}");
-        }
-
-        List<string> dropdownOptions = new List<string>();
-        foreach (var keyInfo in keyInfos)
-        {
-            dropdownOptions.Add(keyInfo.KeyName + " (" + keyInfo.Address + ")");
-        }
-
-        _listKeyDropdown.ClearOptions();
-        _listKeyDropdown.AddOptions(dropdownOptions);
-    }
+    
 }
