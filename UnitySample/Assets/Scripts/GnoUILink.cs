@@ -1,5 +1,4 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using UnityEngine;
@@ -17,10 +16,10 @@ namespace Gno.Unity.Sample.UI
         [HideInInspector]
         public string currentAddressIndexKey = "CurrentAddressIndexKey";
 
-        [SerializeField] private int accountNumLimit = 10;
+        //[SerializeField] private int accountNumLimit = 10;
         public List<string> addressList;
 
-        public event Action<float> onGetBalance;
+        //public event Action<float> onGetBalance;
         public static class Constants
         {
             public const int PUBKEY_SIZE = 58;
@@ -42,7 +41,7 @@ namespace Gno.Unity.Sample.UI
             return BitConverter.ToString(bytes).Replace("-", "").ToLower();
         }
         //private Wallet wallet;
-        private string faucetEndpoint = "https://faucet.devnet.aptoslabs.com";
+        //private string faucetEndpoint = "https://faucet.devnet.aptoslabs.com";
 
         private void Awake()
         {
@@ -59,7 +58,11 @@ namespace Gno.Unity.Sample.UI
 
         }
 
-
+        public void InitWalletFromCache()
+        {
+            GetWalletAddress();
+            //LoadCurrentWalletBalance();
+        }
         public bool CreateNewWallet()
         {
 
@@ -81,7 +84,28 @@ namespace Gno.Unity.Sample.UI
         }
 
 
+        public bool RestoreWallet(string _mnemo)
+        {
+            try
+            {
+                PlayerPrefs.SetString(mnemonicsKey, _mnemo.ToString());
+                PlayerPrefs.SetInt(currentAddressIndexKey, 0);
 
+                GetWalletAddress();
+                //LoadCurrentWalletBalance();
+                if(addressList.Count == 0)
+                {
+                    return false;
+                }
+                return true;
+            }
+            catch
+            {
+
+            }
+
+            return false;
+        }
         public List<string> GetWalletAddress()
         {
             addressList = new List<string>();
@@ -114,8 +138,5 @@ namespace Gno.Unity.Sample.UI
 
             return addressList;
         }
-
-
-
     }
 }

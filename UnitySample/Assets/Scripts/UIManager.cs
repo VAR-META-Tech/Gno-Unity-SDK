@@ -1,8 +1,5 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Runtime.InteropServices;
-using System.Text.RegularExpressions;
 using Gno.Unity.Sample.UI;
 using TMPro;
 using UnityEngine;
@@ -13,18 +10,11 @@ namespace Aptos.Unity.Sample.UI
     {
         static public UIManager Instance { get; set; }
 
-        [SerializeField]
-        public TMP_InputField _mnemonicInput;
-
-
-        [SerializeField]
-        public TMP_InputField _nameInput;
-
-        [SerializeField]
-        public TMP_Dropdown _listKeyDropdown;
-
-        
-
+        [Header("General")]
+        public List<PanelTab> panelTabs;
+        [Space]
+        [SerializeField] private TMP_Text mainPanelTitle;
+        [Space]
         [SerializeField] private PanelTab accountTab;
         [SerializeField] private PanelTab sendTransactionTab;
         [SerializeField] private PanelTab mintNFTTab;
@@ -76,6 +66,8 @@ namespace Aptos.Unity.Sample.UI
         {
             if (PlayerPrefs.GetString(GnoUILink.Instance.mnemonicsKey) != string.Empty)
             {
+                GnoUILink.Instance.InitWalletFromCache();
+                AddWalletAddressListUI(GnoUILink.Instance.addressList);
                 ToggleEmptyState(false);
             }
             else
@@ -105,6 +97,35 @@ namespace Aptos.Unity.Sample.UI
             accountTab.DeActive(_empty);
             sendTransactionTab.DeActive(_empty);
             mintNFTTab.DeActive(_empty);
+            if (_empty)
+            {
+                walletListDropDown.ClearOptions();
+                List<string> options = new List<string>();
+                options.Add("Please Create Wallet First");
+                walletListDropDown.AddOptions(options);
+                //balanceText.text = "n/a APT";
+                createdMnemonicInputField.text = String.Empty;
+                //importMnemonicInputField.text = String.Empty;
+
+                OpenTabPanel(addAccountTab);
+            }
+        }
+        public void OpenTabPanel(PanelTab _panelTab)
+        {
+            foreach (PanelTab _childPanelTab in panelTabs)
+            {
+                if (_childPanelTab.panelGroup == _panelTab.panelGroup)
+                {
+                    _childPanelTab.UnSelected();
+                }
+            }
+
+            _panelTab.Selected();
+
+            if (_panelTab.panelGroup == PanelGroup.mainPanel)
+            {
+                mainPanelTitle.text = _panelTab.tabName;
+            }
         }
         public void onAddAccountButtonClicked()
         {
@@ -119,7 +140,23 @@ namespace Aptos.Unity.Sample.UI
             }
             AddWalletAddressListUI(GnoUILink.Instance.addressList);
         }
+        public void OnImportWalletClicked(TMP_InputField _input)
+        {
+            if (GnoUILink.Instance.RestoreWallet(_input.text))
+            {
+                AddWalletAddressListUI(GnoUILink.Instance.addressList);
+                ToggleEmptyState(false);
+            }
+            else
+            {
+                ToggleEmptyState(true);
+            }
+        }
+        public void Logout()
+        {
+            PlayerPrefs.DeleteKey(GnoUILink.Instance.mnemonicsKey);
 
-
+            ToggleEmptyState(true);
+        }
     }
 }
