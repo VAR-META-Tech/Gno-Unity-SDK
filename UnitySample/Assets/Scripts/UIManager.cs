@@ -3,8 +3,10 @@ using System.Collections.Generic;
 using Gno.Unity.Sample.UI;
 using TMPro;
 using UnityEngine;
+using Gno.Unity.Rest;
+using Gno.Unity.Rest.Model;
 
-namespace Aptos.Unity.Sample.UI
+namespace Gno.Unity.Sample.UI
 {
     public class UIManager : MonoBehaviour
     {
@@ -14,6 +16,7 @@ namespace Aptos.Unity.Sample.UI
         public List<PanelTab> panelTabs;
         [Space]
         [SerializeField] private TMP_Text mainPanelTitle;
+        [SerializeField] private GameObject notificationPrefab;
         [Space]
         [SerializeField] private PanelTab accountTab;
         [SerializeField] private PanelTab sendTransactionTab;
@@ -28,23 +31,9 @@ namespace Aptos.Unity.Sample.UI
         [SerializeField] private TMP_InputField createdMnemonicInputField;
         [SerializeField] private TMP_InputField importMnemonicInputField;
 
-        
+        [Header("Notification")]
+        [SerializeField] private Transform notificationPanel;
 
-
-        
-        public class ResponseInfo
-        {
-            public Status status;
-            public string message;
-            public enum Status
-            {
-                Success,
-                Pending,
-                NotFound,
-                Failed,
-                Warning
-            }
-        }
         // Start is called before the first frame update
 
         private void Awake()
@@ -69,6 +58,7 @@ namespace Aptos.Unity.Sample.UI
                 GnoUILink.Instance.InitWalletFromCache();
                 AddWalletAddressListUI(GnoUILink.Instance.addressList);
                 ToggleEmptyState(false);
+                ToggleNotification(ResponseInfo.Status.Success, "Successfully Import the Wallet");
             }
             else
             {
@@ -127,16 +117,23 @@ namespace Aptos.Unity.Sample.UI
                 mainPanelTitle.text = _panelTab.tabName;
             }
         }
+        public void ToggleNotification(ResponseInfo.Status status, string _message)
+        {
+            NotificationPanel np = Instantiate(notificationPrefab, notificationPanel).GetComponent<NotificationPanel>();
+            np.Toggle(status, _message);
+        }
         public void onAddAccountButtonClicked()
         {
             if (GnoUILink.Instance.CreateNewWallet())
             {
                 createdMnemonicInputField.text = PlayerPrefs.GetString(GnoUILink.Instance.mnemonicsKey);
                 ToggleEmptyState(false);
+                ToggleNotification(ResponseInfo.Status.Success, "Successfully Create the Wallet");
             }
             else
             {
                 ToggleEmptyState(true);
+                ToggleNotification(ResponseInfo.Status.Failed, "Fail to Create the Wallet");
             }
             AddWalletAddressListUI(GnoUILink.Instance.addressList);
         }
@@ -146,10 +143,12 @@ namespace Aptos.Unity.Sample.UI
             {
                 AddWalletAddressListUI(GnoUILink.Instance.addressList);
                 ToggleEmptyState(false);
+                ToggleNotification(ResponseInfo.Status.Success, "Successfully Import the Wallet");
             }
             else
             {
                 ToggleEmptyState(true);
+                ToggleNotification(ResponseInfo.Status.Failed, "Fail to Import the Wallet");
             }
         }
         public void Logout()

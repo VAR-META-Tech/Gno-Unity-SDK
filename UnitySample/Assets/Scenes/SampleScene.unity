@@ -11594,9 +11594,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 24264c968cfc8473899ab1db9c1b5488, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _mnemonicInput: {fileID: 277953583}
-  _nameInput: {fileID: 227288290}
-  _listKeyDropdown: {fileID: 1509881921}
+  panelTabs:
+  - {fileID: 1890075410}
+  - {fileID: 2009402225}
+  - {fileID: 1346293488}
+  - {fileID: 602082401}
+  mainPanelTitle: {fileID: 505218977}
+  notificationPrefab: {fileID: 5678977999922569033, guid: e06528e00011b49b8b30811bd6729b2f, type: 3}
   accountTab: {fileID: 1890075410}
   sendTransactionTab: {fileID: 2009402225}
   mintNFTTab: {fileID: 1346293488}
@@ -11605,6 +11609,7 @@ MonoBehaviour:
   networkDropDown: {fileID: 650013875}
   createdMnemonicInputField: {fileID: 830400038}
   importMnemonicInputField: {fileID: 0}
+  notificationPanel: {fileID: 1628886737}
 --- !u!4 &933688803
 Transform:
   m_ObjectHideFlags: 0
@@ -11635,7 +11640,6 @@ MonoBehaviour:
   mnemonicsKey: MnemonicsKey
   privateKey: PrivateKey
   currentAddressIndexKey: CurrentAddressIndexKey
-  accountNumLimit: 10
   addressList: []
 --- !u!1 &936680191
 GameObject:
@@ -13184,6 +13188,7 @@ RectTransform:
   - {fileID: 315339407}
   - {fileID: 886828022}
   - {fileID: 155571508}
+  - {fileID: 1628886737}
   m_Father: {fileID: 1857942270}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.14450002, y: 0}
@@ -15002,12 +15007,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d54ba8d983fd34fab98dd37531a0c88b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  btnCreateWallet: {fileID: 484041304}
-  btnImportWallet: {fileID: 1252815844}
+  createWallet: {fileID: 273514054}
+  importWallet: {fileID: 1554026192}
   txtTitleWallet: {fileID: 66439666}
   dropDownName: {fileID: 1201313313}
-  createWallet: {fileID: 830400037}
-  importWallet: {fileID: 134670921}
 --- !u!1 &1201841113
 GameObject:
   m_ObjectHideFlags: 0
@@ -15320,12 +15323,12 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 933688802}
-        m_TargetAssemblyTypeName: UIManager, Assembly-CSharp
-        m_MethodName: onAddAccountButtonClicked
-        m_Mode: 1
+        m_TargetAssemblyTypeName: Aptos.Unity.Sample.UI.UIManager, Assembly-CSharp
+        m_MethodName: OnImportWalletClicked
+        m_Mode: 2
         m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_ObjectArgument: {fileID: 134670922}
+          m_ObjectArgumentAssemblyTypeName: TMPro.TMP_InputField, Unity.TextMeshPro
           m_IntArgument: 0
           m_FloatArgument: 0
           m_StringArgument: 
@@ -17045,7 +17048,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: -2.5818, y: -0.5}
+  m_AnchoredPosition: {x: -2.581787, y: -0.5}
   m_SizeDelta: {x: -44.8364, y: -13}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1423660555
@@ -18290,6 +18293,68 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1611444662}
   m_CullTransparentMesh: 1
+--- !u!1 &1628886736
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1628886737}
+  - component: {fileID: 1628886738}
+  m_Layer: 5
+  m_Name: Notification Panel
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &1628886737
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1628886736}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1076766044}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0.5924498, y: 0}
+  m_AnchorMax: {x: 1, y: 1}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 0, y: 0}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &1628886738
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1628886736}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 59f8146938fff824cb5fd77236b75775, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Padding:
+    m_Left: 0
+    m_Right: 0
+    m_Top: 0
+    m_Bottom: 0
+  m_ChildAlignment: 7
+  m_Spacing: 20
+  m_ChildForceExpandWidth: 1
+  m_ChildForceExpandHeight: 0
+  m_ChildControlWidth: 1
+  m_ChildControlHeight: 0
+  m_ChildScaleWidth: 0
+  m_ChildScaleHeight: 0
+  m_ReverseArrangement: 0
 --- !u!1 &1632267493
 GameObject:
   m_ObjectHideFlags: 0
@@ -21980,7 +22045,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 2129270405}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 933688802}
+        m_TargetAssemblyTypeName: Aptos.Unity.Sample.UI.UIManager, Assembly-CSharp
+        m_MethodName: Logout
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 1
 --- !u!114 &2129270405
 MonoBehaviour:
   m_ObjectHideFlags: 0

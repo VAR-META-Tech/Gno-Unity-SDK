@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
-namespace Aptos.Unity.Sample.UI
+namespace Gno.Unity.Sample.UI
 {
     public class PanelTab : MonoBehaviour
     {
