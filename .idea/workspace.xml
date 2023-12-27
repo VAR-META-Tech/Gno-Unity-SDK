@@ -1,7 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="2ac16671-4f95-4956-acc0-8a7d515e94d6" name="Changes" comment="update notification" />
+    <list default="true" id="2ac16671-4f95-4956-acc0-8a7d515e94d6" name="Changes" comment="update notification">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/UnitySample/Assets/Scenes/SampleScene.unity" beforeDir="false" afterPath="$PROJECT_DIR$/UnitySample/Assets/Scenes/SampleScene.unity" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/UnitySample/Assets/Scripts/GnoUILink.cs" beforeDir="false" afterPath="$PROJECT_DIR$/UnitySample/Assets/Scripts/GnoUILink.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/UnitySample/Assets/Scripts/SDKWrapper.cs" beforeDir="false" afterPath="$PROJECT_DIR$/UnitySample/Assets/Scripts/SDKWrapper.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/UnitySample/Assets/Scripts/UIManager.cs" beforeDir="false" afterPath="$PROJECT_DIR$/UnitySample/Assets/Scripts/UIManager.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/go_sdk/test.c" beforeDir="false" afterPath="$PROJECT_DIR$/go_sdk/test.c" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -50,6 +57,8 @@
       <workItem from="1702969579908" duration="27760000" />
       <workItem from="1703473780195" duration="7485000" />
       <workItem from="1703580523465" duration="1718000" />
+      <workItem from="1703651535507" duration="5938000" />
+      <workItem from="1703666122864" duration="6221000" />
     </task>
     <task id="LOCAL-00001" summary="update UI">
       <created>1701655777241</created>
@@ -93,7 +102,14 @@
       <option name="project" value="LOCAL" />
       <updated>1703600948990</updated>
     </task>
-    <option name="localTasksCounter" value="7" />
+    <task id="LOCAL-00007" summary="update notification">
+      <created>1703651585655</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1703651585655</updated>
+    </task>
+    <option name="localTasksCounter" value="8" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">

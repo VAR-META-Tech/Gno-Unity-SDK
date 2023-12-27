@@ -30,6 +30,9 @@ public class SDKWrapper
     public static extern IntPtr ListKeyInfo(out int length);
 
     [DllImport(DllPath)]
+    public static extern IntPtr QueryAccount(byte[] address);
+
+    [DllImport(DllPath)]
     public static extern IntPtr CreateAccount(
         string nameOrBech32,
         string mnemonic,
@@ -39,4 +42,9 @@ public class SDKWrapper
         int index
     );
 
+    [DllImport(DllPath)]
+    public static extern IntPtr SelectAccount(string nameOrBech32);
+
+    [DllImport(DllPath)]
+    public static extern String AddressToBech32(byte[] address);
 }

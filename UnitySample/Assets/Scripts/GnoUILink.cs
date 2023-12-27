@@ -19,7 +19,7 @@ namespace Gno.Unity.Sample.UI
         //[SerializeField] private int accountNumLimit = 10;
         public List<string> addressList;
 
-        //public event Action<float> onGetBalance;
+        public event Action<float> onGetBalance;
         public static class Constants
         {
             public const int PUBKEY_SIZE = 58;
@@ -35,6 +35,26 @@ namespace Gno.Unity.Sample.UI
             public byte[] PubKey;
             [MarshalAs(UnmanagedType.ByValArray, SizeConst = Constants.ADDRESS_SIZE)]
             public byte[] Address;
+        }
+        [StructLayout(LayoutKind.Sequential)]
+        public struct BaseAccount
+        {
+            [MarshalAs(UnmanagedType.ByValArray, SizeConst = Constants.ADDRESS_SIZE)]
+            public byte[] Address;
+
+            public IntPtr Coins; // Pointer to Coins, assuming it's a class or another struct
+
+            [MarshalAs(UnmanagedType.ByValArray, SizeConst = Constants.PUBKEY_SIZE)]
+            public byte[] PubKey;
+
+            public ulong AccountNumber;
+            public ulong Sequence;
+        }
+        [StructLayout(LayoutKind.Sequential)]
+        public struct UserAccount
+        {
+            public IntPtr Info; // Pointer to KeyInfo
+            public IntPtr Password; // Pointer to a null-terminated string
         }
         public static string ByteArrayToHexString(byte[] bytes)
         {
@@ -106,6 +126,7 @@ namespace Gno.Unity.Sample.UI
 
             return false;
         }
+
         public List<string> GetWalletAddress()
         {
             addressList = new List<string>();
@@ -124,9 +145,15 @@ namespace Gno.Unity.Sample.UI
                 if (keyInfoPtr != IntPtr.Zero)
                 {
                     KeyInfo keyInfo = Marshal.PtrToStructure<KeyInfo>(keyInfoPtr);
+                    string adressStringTest = SDKWrapper.AddressToBech32(keyInfo.Address);
                     string addressString = ByteArrayToHexString(keyInfo.Address);
                     addressList.Add(addressString);
-
+                    IntPtr baseAccountPtr = SDKWrapper.QueryAccount(keyInfo.Address);
+                    if (baseAccountPtr != IntPtr.Zero)
+                    {
+                        BaseAccount baseAccount = Marshal.PtrToStructure<BaseAccount>(baseAccountPtr);
+                        Debug.Log("baseAccount code.");
+                    }
                 }
 
                 // Refresh the key list to show the new account.
@@ -137,6 +164,16 @@ namespace Gno.Unity.Sample.UI
             }
 
             return addressList;
+        }
+
+        public float GnoTokenToFloat(float _token)
+        {
+            return _token / 100000000f;
+        }
+
+        public long GnoFloatToToken(float _amount)
+        {
+            return Convert.ToInt64(_amount * 100000000);
         }
     }
 }

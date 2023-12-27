@@ -26,6 +26,7 @@ namespace Gno.Unity.Sample.UI
         [Header("Infos")]
         [SerializeField] private TMP_Dropdown walletListDropDown;
         [SerializeField] private TMP_Dropdown networkDropDown;
+        [SerializeField] private TMP_Text balanceText;
 
         [Header("Add Account")]
         [SerializeField] private TMP_InputField createdMnemonicInputField;
@@ -43,6 +44,7 @@ namespace Gno.Unity.Sample.UI
         void Start()
         {
             InitStatusCheck();
+            GnoUILink.Instance.onGetBalance += UpdateBalance;
         }
 
         // Update is called once per frame
@@ -93,9 +95,9 @@ namespace Gno.Unity.Sample.UI
                 List<string> options = new List<string>();
                 options.Add("Please Create Wallet First");
                 walletListDropDown.AddOptions(options);
-                //balanceText.text = "n/a APT";
+                balanceText.text = "n/a APT";
                 createdMnemonicInputField.text = String.Empty;
-                //importMnemonicInputField.text = String.Empty;
+                importMnemonicInputField.text = String.Empty;
 
                 OpenTabPanel(addAccountTab);
             }
@@ -150,6 +152,10 @@ namespace Gno.Unity.Sample.UI
                 ToggleEmptyState(true);
                 ToggleNotification(ResponseInfo.Status.Failed, "Fail to Import the Wallet");
             }
+        }
+        void UpdateBalance(float _amount)
+        {
+            balanceText.text = GnoUILink.Instance.GnoTokenToFloat(_amount).ToString("0.0000") + " APT";
         }
         public void Logout()
         {
