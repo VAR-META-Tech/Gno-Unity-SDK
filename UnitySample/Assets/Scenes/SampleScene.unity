@@ -3700,7 +3700,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.036000002, y: 0.078}
   m_AnchorMax: {x: 0.56875414, y: 0.6218363}
-  m_AnchoredPosition: {x: -1.2841797, y: -3.2263184}
+  m_AnchoredPosition: {x: -1.2841797, y: -3.22641}
   m_SizeDelta: {x: -0.24859619, y: 7.228607}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &273514056
@@ -4639,7 +4639,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 0}
-  m_AnchoredPosition: {x: 0, y: 2}
+  m_AnchoredPosition: {x: 0, y: 2.0000076}
   m_SizeDelta: {x: 0, y: 150}
   m_Pivot: {x: 0.5, y: 1}
 --- !u!114 &338178019
@@ -14884,7 +14884,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.79963726, y: 0.347}
   m_AnchorMax: {x: 0.96165085, y: 0.44925442}
-  m_AnchoredPosition: {x: 0.049682617, y: -9.8113}
+  m_AnchoredPosition: {x: 0.049682617, y: -9.81131}
   m_SizeDelta: {x: -4.14, y: 19.6225}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1201313315
@@ -17747,7 +17747,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.036000002, y: 0.078}
   m_AnchorMax: {x: 0.56875414, y: 0.6218363}
-  m_AnchoredPosition: {x: -1.2841797, y: -3.2263184}
+  m_AnchoredPosition: {x: -1.2841797, y: -3.22641}
   m_SizeDelta: {x: -0.24859619, y: 7.228607}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1554026194
@@ -18324,10 +18324,10 @@ RectTransform:
   m_Children: []
   m_Father: {fileID: 1076766044}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.5924498, y: 0}
-  m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 0, y: 0}
+  m_AnchorMin: {x: 0.6195503, y: 0.054}
+  m_AnchorMax: {x: 1, y: 0.96700007}
+  m_AnchoredPosition: {x: 0.31750488, y: -1.2644958}
+  m_SizeDelta: {x: -0.6351013, y: -2.5292}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1628886738
 MonoBehaviour:
@@ -18347,7 +18347,7 @@ MonoBehaviour:
     m_Top: 0
     m_Bottom: 0
   m_ChildAlignment: 7
-  m_Spacing: 20
+  m_Spacing: 0
   m_ChildForceExpandWidth: 1
   m_ChildForceExpandHeight: 0
   m_ChildControlWidth: 1
