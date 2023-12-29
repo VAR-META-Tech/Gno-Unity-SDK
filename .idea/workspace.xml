@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="2ac16671-4f95-4956-acc0-8a7d515e94d6" name="Changes" comment="update UI">
+    <list default="true" id="2ac16671-4f95-4956-acc0-8a7d515e94d6" name="Changes" comment="update notification">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/UnitySample/Assets/Scenes/SampleScene.unity" beforeDir="false" afterPath="$PROJECT_DIR$/UnitySample/Assets/Scenes/SampleScene.unity" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/UnitySample/Assets/Scripts/GnoUILink.cs" beforeDir="false" afterPath="$PROJECT_DIR$/UnitySample/Assets/Scripts/GnoUILink.cs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/UnitySample/Assets/Scripts/SDKWrapper.cs" beforeDir="false" afterPath="$PROJECT_DIR$/UnitySample/Assets/Scripts/SDKWrapper.cs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/UnitySample/Assets/Scripts/UIManager.cs" beforeDir="false" afterPath="$PROJECT_DIR$/UnitySample/Assets/Scripts/UIManager.cs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/go_sdk/test.c" beforeDir="false" afterPath="$PROJECT_DIR$/go_sdk/test.c" afterDir="false" />
@@ -33,6 +35,7 @@
     &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
     &quot;WebServerToolWindowFactoryState&quot;: &quot;false&quot;,
+    &quot;last_opened_file_path&quot;: &quot;/Users/baoquoc/VarMeta/Projects/AR_VR/GnoNew/Gno-Unity-SDK&quot;,
     &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
     &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
@@ -52,6 +55,10 @@
       <workItem from="1702005516542" duration="5093000" />
       <workItem from="1702455220352" duration="819000" />
       <workItem from="1702969579908" duration="27760000" />
+      <workItem from="1703473780195" duration="7485000" />
+      <workItem from="1703580523465" duration="1718000" />
+      <workItem from="1703651535507" duration="5938000" />
+      <workItem from="1703666122864" duration="6221000" />
     </task>
     <task id="LOCAL-00001" summary="update UI">
       <created>1701655777241</created>
@@ -74,7 +81,35 @@
       <option name="project" value="LOCAL" />
       <updated>1702005675846</updated>
     </task>
-    <option name="localTasksCounter" value="4" />
+    <task id="LOCAL-00004" summary="update add account and GenerateRecoveryPhrase">
+      <created>1703500213136</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1703500213136</updated>
+    </task>
+    <task id="LOCAL-00005" summary="update add account import account and logout">
+      <created>1703580564844</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1703580564844</updated>
+    </task>
+    <task id="LOCAL-00006" summary="update notification">
+      <created>1703600948990</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1703600948990</updated>
+    </task>
+    <task id="LOCAL-00007" summary="update notification">
+      <created>1703651585655</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1703651585655</updated>
+    </task>
+    <option name="localTasksCounter" value="8" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -93,6 +128,9 @@
   </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="update UI" />
-    <option name="LAST_COMMIT_MESSAGE" value="update UI" />
+    <MESSAGE value="update add account and GenerateRecoveryPhrase" />
+    <MESSAGE value="update add account import account and logout" />
+    <MESSAGE value="update notification" />
+    <option name="LAST_COMMIT_MESSAGE" value="update notification" />
   </component>
 </project>

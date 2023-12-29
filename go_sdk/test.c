@@ -60,6 +60,8 @@ int main()
     UserAccount *user = SelectAccount("test");
     printf("User name: %s\n", user->Info->Name);
     printf("User pass: %s\n", user->Password);
+    printf("User Address: %s\n", user->Info->Address);
+
 
     BaseAccount *acc = QueryAccount(user->Info->Address);
     if (acc)
