@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
+using System.Threading.Tasks;
 using UnityEngine;
 
 namespace Gno.Unity.Sample.UI
@@ -80,7 +81,7 @@ namespace Gno.Unity.Sample.UI
 
         public void InitWalletFromCache()
         {
-            GetWalletAddress();
+            GetWalletAddressAsync();
             //LoadCurrentWalletBalance();
         }
         public bool CreateNewWallet()
@@ -90,7 +91,7 @@ namespace Gno.Unity.Sample.UI
             PlayerPrefs.SetString(mnemonicsKey, mnemo.ToString());
             PlayerPrefs.SetInt(currentAddressIndexKey, 0);
 
-            GetWalletAddress();
+            GetWalletAddressAsync();
             //LoadCurrentWalletBalance();
 
             if (mnemo.ToString() != string.Empty)
@@ -111,7 +112,7 @@ namespace Gno.Unity.Sample.UI
                 PlayerPrefs.SetString(mnemonicsKey, _mnemo.ToString());
                 PlayerPrefs.SetInt(currentAddressIndexKey, 0);
 
-                GetWalletAddress();
+                GetWalletAddressAsync();
                 //LoadCurrentWalletBalance();
                 if(addressList.Count == 0)
                 {
@@ -127,7 +128,7 @@ namespace Gno.Unity.Sample.UI
             return false;
         }
 
-        public List<string> GetWalletAddress()
+        public List<string> GetWalletAddressAsync()
         {
             addressList = new List<string>();
             string mnemonics = PlayerPrefs.GetString(mnemonicsKey);
@@ -145,15 +146,12 @@ namespace Gno.Unity.Sample.UI
                 if (keyInfoPtr != IntPtr.Zero)
                 {
                     KeyInfo keyInfo = Marshal.PtrToStructure<KeyInfo>(keyInfoPtr);
-                    string adressStringTest = SDKWrapper.AddressToBech32(keyInfo.Address);
+                    IntPtr keyInfoTest = SDKWrapper.GetKeyInfoByAddress(keyInfo.Address);
+                    IntPtr accountTest = SDKWrapper.QueryAccount(keyInfo.Address);
+                    //IntPtr accountTest = await QueryAccountAsync(keyInfo.Address);
+
                     string addressString = ByteArrayToHexString(keyInfo.Address);
                     addressList.Add(addressString);
-                    IntPtr baseAccountPtr = SDKWrapper.QueryAccount(keyInfo.Address);
-                    if (baseAccountPtr != IntPtr.Zero)
-                    {
-                        BaseAccount baseAccount = Marshal.PtrToStructure<BaseAccount>(baseAccountPtr);
-                        Debug.Log("baseAccount code.");
-                    }
                 }
 
                 // Refresh the key list to show the new account.
@@ -164,6 +162,12 @@ namespace Gno.Unity.Sample.UI
             }
 
             return addressList;
+        }
+        public static async Task<IntPtr> QueryAccountAsync(byte[] address)
+        {
+            return await Task.Run(() => {
+                return SDKWrapper.QueryAccount(address);
+            });
         }
 
         public float GnoTokenToFloat(float _token)
