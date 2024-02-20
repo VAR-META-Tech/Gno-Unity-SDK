@@ -47,11 +47,11 @@ import (
 	"unsafe"
 	"var/gno_sdk/service"
 
+	"github.com/gnolang/gno/gno.land/pkg/gnoclient"
 	rpcclient "github.com/gnolang/gno/tm2/pkg/bft/rpc/client"
 	"github.com/gnolang/gno/tm2/pkg/crypto"
 	"github.com/gnolang/gno/tm2/pkg/crypto/bip39"
 	crypto_keys "github.com/gnolang/gno/tm2/pkg/crypto/keys"
-	"github.com/gnolang/gnomobile/gnoclient"
 	"go.uber.org/zap"
 )
 
@@ -548,17 +548,24 @@ func Call(packagePath *C.char, fnc *C.char, args **C.char, gasFee *C.char, gasWa
 	}
 	serviceEx.Lock.RUnlock()
 
-	cfg := gnoclient.CallCfg{
-		PkgPath:   C.GoString(packagePath),
-		FuncName:  C.GoString(fnc),
-		Args:      cArrayToStrings(args),
+	cfg := gnoclient.BaseTxCfg{
 		GasFee:    C.GoString(gasFee),
 		GasWanted: int64(*gasWanted),
-		Send:      C.GoString(send),
 		Memo:      C.GoString(memo),
 	}
 
-	bres, err := serviceEx.Client.Call(cfg)
+	msgs := make([]gnoclient.MsgCall, 0)
+
+	// for _, msg := range req.Msg.Msgs {
+	msgs = append(msgs, gnoclient.MsgCall{
+		PkgPath:  C.GoString(packagePath),
+		FuncName: C.GoString(fnc),
+		Args:     cArrayToStrings(args),
+		Send:     C.GoString(send),
+	})
+	// }
+
+	bres, err := serviceEx.Client.Call(cfg, msgs...)
 	if err != nil {
 		serviceEx.Logger.Debug("Call", zap.String("error", err.Error()))
 		return nil
@@ -566,6 +573,42 @@ func Call(packagePath *C.char, fnc *C.char, args **C.char, gasFee *C.char, gasWa
 
 	*retLen = C.int(len(bres.DeliverTx.Data))
 	return (*C.uint8_t)(unsafe.Pointer(&bres.DeliverTx.Data[0]))
+}
+
+func Send(address *C.uint8_t, gasFee *C.char, gasWanted *C.uint64_t, send *C.char, memo *C.char, retLen *C.int) *C.uint8_t {
+	serviceEx.Logger.Debug("Send", zap.String("toAddress", crypto.AddressToBech32(crypto.AddressFromBytes(C.GoBytes(unsafe.Pointer(address), C.ADDRESS_SIZE)))), zap.String("send", msg.Send))
+
+	serviceEx.Lock.RLock()
+	if serviceEx.ActiveAccount == nil {
+		serviceEx.Lock.RUnlock()
+		return nil
+	}
+	serviceEx.Lock.RUnlock()
+
+	cfg := gnoclient.BaseTxCfg{
+		GasFee:    C.GoString(gasFee),
+		GasWanted: int64(*gasWanted),
+		Memo:      C.GoString(memo),
+	}
+
+	msgs := make([]gnoclient.MsgSend, 0)
+
+	// for _, msg := range req.Msg.Msgs {
+	msgs = append(msgs, gnoclient.MsgSend{
+		ToAddress: crypto.AddressFromBytes(C.GoBytes(unsafe.Pointer(address), C.ADDRESS_SIZE)),
+		Send:      C.GoString(send),
+	})
+	// }
+
+	_, err := serviceEx.Client.Send(cfg, msgs...)
+	if err != nil {
+		serviceEx.Logger.Debug("Send", zap.String("error", err.Error()))
+		return nil
+	}
+
+	// *retLen = C.int(len(bres.DeliverTx.Data))
+	// return (*C.uint8_t)(unsafe.Pointer(&bres.DeliverTx.Data[0]))
+	return nil
 }
 
 // cArrayToStrings converts a null-terminated array of C strings to a Go slice of strings.

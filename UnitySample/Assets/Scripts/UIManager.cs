@@ -31,6 +31,8 @@ namespace Gno.Unity.Sample.UI
         [Header("Add Account")]
         [SerializeField] private TMP_InputField createdMnemonicInputField;
         [SerializeField] private TMP_InputField importMnemonicInputField;
+        [SerializeField] private GameObject inputName;
+        [SerializeField] private TMP_InputField inputNameField;
 
         [Header("Notification")]
         [SerializeField] private Transform notificationPanel;
@@ -68,6 +70,12 @@ namespace Gno.Unity.Sample.UI
             }
 
         }
+
+        public void OnCreateWallet()
+        {
+            inputName.SetActive(true);
+        }
+
         public void AddWalletAddressListUI(List<string> _addressList)
         {
             walletListDropDown.ClearOptions();
@@ -126,7 +134,8 @@ namespace Gno.Unity.Sample.UI
         }
         public void onAddAccountButtonClicked()
         {
-            if (GnoUILink.Instance.CreateNewWallet())
+            inputName.SetActive(false);
+            if (inputNameField.text != "" && GnoUILink.Instance.CreateNewWallet(inputNameField.text))
             {
                 createdMnemonicInputField.text = PlayerPrefs.GetString(GnoUILink.Instance.mnemonicsKey);
                 ToggleEmptyState(false);
@@ -155,7 +164,7 @@ namespace Gno.Unity.Sample.UI
         }
         void UpdateBalance(float _amount)
         {
-            balanceText.text = GnoUILink.Instance.GnoTokenToFloat(_amount).ToString("0.0000") + " APT";
+            balanceText.text = _amount.ToString("0.0") + " ugnot";
         }
         public void Logout()
         {

@@ -3,9 +3,9 @@ package service
 import (
 	"sync"
 
+	"github.com/gnolang/gno/gno.land/pkg/gnoclient"
 	rpcclient "github.com/gnolang/gno/tm2/pkg/bft/rpc/client"
 	"github.com/gnolang/gno/tm2/pkg/crypto/keys"
-	"github.com/gnolang/gnomobile/gnoclient"
 	"go.uber.org/zap"
 )
 

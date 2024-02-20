@@ -52,6 +52,19 @@ namespace Gno.Unity.Sample.UI
             public ulong Sequence;
         }
         [StructLayout(LayoutKind.Sequential)]
+        public struct Coin
+        {
+            public string Denom;
+            public ulong Amount;
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        public struct Coins
+        {
+            public IntPtr Array; // Pointer to the first Coin element
+            public ulong Length; // Number of elements in the Coins array
+        }
+        [StructLayout(LayoutKind.Sequential)]
         public struct UserAccount
         {
             public IntPtr Info; // Pointer to KeyInfo
@@ -84,24 +97,74 @@ namespace Gno.Unity.Sample.UI
             GetWalletAddressAsync();
             //LoadCurrentWalletBalance();
         }
-        public bool CreateNewWallet()
+
+        public Coin[] GetCoinsArray(IntPtr coinsPtr, ulong length)
+        {
+            if (coinsPtr == IntPtr.Zero)
+            {
+                return new Coin[0];
+            }
+
+            Coin[] coinsArray = new Coin[length];
+            int coinSize = Marshal.SizeOf(typeof(Coin));
+
+            for (ulong i = 0; i < length; i++)
+            {
+                IntPtr currentCoinPtr = new IntPtr(coinsPtr.ToInt64() + (long)(i * (ulong)coinSize));
+                coinsArray[i] = Marshal.PtrToStructure<Coin>(currentCoinPtr);
+            }
+
+            return coinsArray;
+        }
+
+        public bool CreateNewWallet(string name)
         {
 
-            string mnemo = SDKWrapper.GenerateRecoveryPhrase();
-            PlayerPrefs.SetString(mnemonicsKey, mnemo.ToString());
-            PlayerPrefs.SetInt(currentAddressIndexKey, 0);
+            //string mnemo = SDKWrapper.GenerateRecoveryPhrase();
+            string mnemo = "source bonus chronic canvas draft south burst lottery vacant surface solve popular case indicate oppose farm nothing bullet exhibit title speed wink action roast";
 
-            GetWalletAddressAsync();
-            //LoadCurrentWalletBalance();
-
-            if (mnemo.ToString() != string.Empty)
+            // Check if mnemonic code is present and has length greater than 0.
+            if (!string.IsNullOrEmpty(mnemo))
             {
-                return true;
+                // Determine the index for the new account.
+                int index = 0;
+
+                // Create another account with the given name and mnemonic.
+                IntPtr keyInfoPtr = SDKWrapper.CreateAccount(name, mnemo, "", "", index, index);
+                if (keyInfoPtr != IntPtr.Zero)
+                {
+                    KeyInfo keyInfo = Marshal.PtrToStructure<KeyInfo>(keyInfoPtr);
+                    IntPtr userAccountPrt = SDKWrapper.SelectAccount(name);
+                    //IntPtr keyInfoTest = SDKWrapper.GetKeyInfoByAddress(keyInfo.Address);
+                    IntPtr accountTest = SDKWrapper.QueryAccount(keyInfo.Address);
+                    if (accountTest != IntPtr.Zero)
+                    {
+                        BaseAccount accountBase = Marshal.PtrToStructure<BaseAccount>(accountTest);
+                        // Marshal the Coins structure
+                        Coins coinsStruct = Marshal.PtrToStructure<Coins>(accountBase.Coins);
+                        Coin[] coins = GetCoinsArray(coinsStruct.Array, coinsStruct.Length);
+                        foreach (var coin in coins)
+                        {
+                            if (coin.Denom == "ugnot")
+                            {
+                                onGetBalance(coin.Amount);
+                            } 
+                        }
+                    }
+
+                    string addressString = ByteArrayToHexString(keyInfo.Address);
+                    addressList.Add(name);
+                    return true;
+                }
+
+                // Refresh the key list to show the new account.
             }
             else
             {
-                return false;
+                Debug.LogError("Missing mnemonic code.");
             }
+
+            return false;
         }
 
 
@@ -133,33 +196,7 @@ namespace Gno.Unity.Sample.UI
             addressList = new List<string>();
             string mnemonics = PlayerPrefs.GetString(mnemonicsKey);
 
-            // Check if mnemonic code is present and has length greater than 0.
-            if (!string.IsNullOrEmpty(mnemonics))
-            {
-                // Default account name.
-                string cname = "testKey";
-                // Determine the index for the new account.
-                int index = 0;
-
-                // Create another account with the given name and mnemonic.
-                IntPtr keyInfoPtr = SDKWrapper.CreateAccount(cname, mnemonics, "", "", index, index);
-                if (keyInfoPtr != IntPtr.Zero)
-                {
-                    KeyInfo keyInfo = Marshal.PtrToStructure<KeyInfo>(keyInfoPtr);
-                    IntPtr keyInfoTest = SDKWrapper.GetKeyInfoByAddress(keyInfo.Address);
-                    IntPtr accountTest = SDKWrapper.QueryAccount(keyInfo.Address);
-                    //IntPtr accountTest = await QueryAccountAsync(keyInfo.Address);
-
-                    string addressString = ByteArrayToHexString(keyInfo.Address);
-                    addressList.Add(addressString);
-                }
-
-                // Refresh the key list to show the new account.
-            }
-            else
-            {
-                Debug.LogError("Missing mnemonic code.");
-            }
+           
 
             return addressList;
         }
@@ -168,16 +205,6 @@ namespace Gno.Unity.Sample.UI
             return await Task.Run(() => {
                 return SDKWrapper.QueryAccount(address);
             });
-        }
-
-        public float GnoTokenToFloat(float _token)
-        {
-            return _token / 100000000f;
-        }
-
-        public long GnoFloatToToken(float _amount)
-        {
-            return Convert.ToInt64(_amount * 100000000);
         }
     }
 }
