@@ -36,6 +36,7 @@ int main()
         printf("GenerateRecoveryPhrase is %s \n", mnemo);
 
         CreateAccount("test", "source bonus chronic canvas draft south burst lottery vacant surface solve popular case indicate oppose farm nothing bullet exhibit title speed wink action roast", "", "", 0, 0);
+        // CreateAccount("test2", "safe worry prevent rather metal sketch okay weird rough person salt pool", "", "", 1, 0);
     }
 
     int len;
@@ -71,5 +72,23 @@ int main()
             printf("%d, %s coins have %d\n", i+1, acc->Coins->Array[i].Denom, acc->Coins->Array[i].Amount);
         }
     }
+
+    // UserAccount *user2 = SelectAccount("test2");
+    // printf("User2 name: %s\n", user2->Info->Name);
+    // printf("User2 pass: %s\n", user2->Password);
+    // printf("User2 Address: %s\n", user2->Info->Address);
+    uint8_t* toAddress = AddressFromBech32("g14qvahvnnllzwl9ehn3mkph248uapsehwgfe4pt");
+    Send(toAddress,"1ugnot",2000000,"2ugnot","",&len);
+
+
+
+    // BaseAccount *acc2 = QueryAccount(user2->Info->Address);
+    // if (acc2)
+    // {
+    //     printf("User2 coins count: %d\n", acc2->Coins->Length);
+    //     for (int i =0; i < acc2->Coins->Length; i++){
+    //         printf("%d, %s coins have %d\n", i+1, acc2->Coins->Array[i].Denom, acc2->Coins->Array[i].Amount);
+    //     }
+    // }
     return 0;
 }

@@ -538,7 +538,7 @@ func QEval(packagePath *C.char, expression *C.char) *C.char {
 }
 
 //export Call
-func Call(packagePath *C.char, fnc *C.char, args **C.char, gasFee *C.char, gasWanted *C.uint64_t, send *C.char, memo *C.char, retLen *C.int) *C.uint8_t {
+func Call(packagePath *C.char, fnc *C.char, args **C.char, gasFee *C.char, gasWanted C.uint64_t, send *C.char, memo *C.char, retLen *C.int) *C.uint8_t {
 	serviceEx.Logger.Debug("Call", zap.String("package", C.GoString(packagePath)), zap.String("function", C.GoString(fnc)), zap.Any("args", cArrayToStrings(args)))
 
 	serviceEx.Lock.RLock()
@@ -550,7 +550,7 @@ func Call(packagePath *C.char, fnc *C.char, args **C.char, gasFee *C.char, gasWa
 
 	cfg := gnoclient.BaseTxCfg{
 		GasFee:    C.GoString(gasFee),
-		GasWanted: int64(*gasWanted),
+		GasWanted: int64(gasWanted),
 		Memo:      C.GoString(memo),
 	}
 
@@ -575,8 +575,9 @@ func Call(packagePath *C.char, fnc *C.char, args **C.char, gasFee *C.char, gasWa
 	return (*C.uint8_t)(unsafe.Pointer(&bres.DeliverTx.Data[0]))
 }
 
-func Send(address *C.uint8_t, gasFee *C.char, gasWanted *C.uint64_t, send *C.char, memo *C.char, retLen *C.int) *C.uint8_t {
-	serviceEx.Logger.Debug("Send", zap.String("toAddress", crypto.AddressToBech32(crypto.AddressFromBytes(C.GoBytes(unsafe.Pointer(address), C.ADDRESS_SIZE)))), zap.String("send", msg.Send))
+//export Send
+func Send(address *C.uint8_t, gasFee *C.char, gasWanted C.uint64_t, send *C.char, memo *C.char, retLen *C.int) *C.uint8_t {
+	serviceEx.Logger.Debug("Send", zap.String("toAddress", crypto.AddressToBech32(crypto.AddressFromBytes(C.GoBytes(unsafe.Pointer(address), C.ADDRESS_SIZE)))), zap.String("send", C.GoString(send)))
 
 	serviceEx.Lock.RLock()
 	if serviceEx.ActiveAccount == nil {
@@ -587,7 +588,7 @@ func Send(address *C.uint8_t, gasFee *C.char, gasWanted *C.uint64_t, send *C.cha
 
 	cfg := gnoclient.BaseTxCfg{
 		GasFee:    C.GoString(gasFee),
-		GasWanted: int64(*gasWanted),
+		GasWanted: int64(gasWanted),
 		Memo:      C.GoString(memo),
 	}
 
@@ -645,14 +646,20 @@ func AddressToBech32(address *C.uint8_t) *C.char {
 }
 
 //export AddressFromBech32
-func AddressFromBech32(bech32Address *C.char) *C.uint8_t {
+func AddressFromBech32(bech32Address *C.char) unsafe.Pointer {
 	address, err := crypto.AddressFromBech32(C.GoString(bech32Address))
+	serviceEx.Logger.Debug("AddressFromBech32", zap.String("bech32Address", C.GoString(bech32Address)))
 	if err != nil {
 		serviceEx.Logger.Debug("AddressFromBech32", zap.String("error", err.Error()))
 		return nil
 	}
+	// Allocate C memory to hold the result
+	cBytes := C.malloc(C.size_t(len(address.Bytes())))
 
-	return (*C.uint8_t)(unsafe.Pointer(&address.Bytes()[0]))
+	// Copy Go bytes into the allocated C memory
+	copy((*[1 << 30]byte)(cBytes)[:], address.Bytes())
+
+	return cBytes
 }
 
 func main() {}

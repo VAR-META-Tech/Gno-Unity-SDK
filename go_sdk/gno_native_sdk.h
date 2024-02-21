@@ -138,9 +138,10 @@ extern int DeleteAccount(char* nameOrBech32, char* password, int skipPassword);
 extern uint8_t* Query(char* path, uint8_t* data, int lenght, int* retLen);
 extern char* Render(char* packagePath, char* args);
 extern char* QEval(char* packagePath, char* expression);
-extern uint8_t* Call(char* packagePath, char* fnc, char** args, char* gasFee, uint64_t* gasWanted, char* send, char* memo, int* retLen);
+extern uint8_t* Call(char* packagePath, char* fnc, char** args, char* gasFee, uint64_t gasWanted, char* send, char* memo, int* retLen);
+extern uint8_t* Send(uint8_t* address, char* gasFee, uint64_t gasWanted, char* send, char* memo, int* retLen);
 extern char* AddressToBech32(uint8_t* address);
-extern uint8_t* AddressFromBech32(char* bech32Address);
+extern void* AddressFromBech32(char* bech32Address);
 
 #ifdef __cplusplus
 }
