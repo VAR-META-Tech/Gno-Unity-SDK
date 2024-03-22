@@ -47,11 +47,11 @@ import (
 	"unsafe"
 	"var/gno_sdk/service"
 
+	"github.com/gnolang/gno/gno.land/pkg/gnoclient"
 	rpcclient "github.com/gnolang/gno/tm2/pkg/bft/rpc/client"
 	"github.com/gnolang/gno/tm2/pkg/crypto"
 	"github.com/gnolang/gno/tm2/pkg/crypto/bip39"
 	crypto_keys "github.com/gnolang/gno/tm2/pkg/crypto/keys"
-	"github.com/gnolang/gnomobile/gnoclient"
 	"go.uber.org/zap"
 )
 
@@ -538,7 +538,7 @@ func QEval(packagePath *C.char, expression *C.char) *C.char {
 }
 
 //export Call
-func Call(packagePath *C.char, fnc *C.char, args **C.char, gasFee *C.char, gasWanted *C.uint64_t, send *C.char, memo *C.char, retLen *C.int) *C.uint8_t {
+func Call(packagePath *C.char, fnc *C.char, args **C.char, gasFee *C.char, gasWanted C.uint64_t, send *C.char, memo *C.char, retLen *C.int) *C.uint8_t {
 	serviceEx.Logger.Debug("Call", zap.String("package", C.GoString(packagePath)), zap.String("function", C.GoString(fnc)), zap.Any("args", cArrayToStrings(args)))
 
 	serviceEx.Lock.RLock()
@@ -548,17 +548,24 @@ func Call(packagePath *C.char, fnc *C.char, args **C.char, gasFee *C.char, gasWa
 	}
 	serviceEx.Lock.RUnlock()
 
-	cfg := gnoclient.CallCfg{
-		PkgPath:   C.GoString(packagePath),
-		FuncName:  C.GoString(fnc),
-		Args:      cArrayToStrings(args),
+	cfg := gnoclient.BaseTxCfg{
 		GasFee:    C.GoString(gasFee),
-		GasWanted: int64(*gasWanted),
-		Send:      C.GoString(send),
+		GasWanted: int64(gasWanted),
 		Memo:      C.GoString(memo),
 	}
 
-	bres, err := serviceEx.Client.Call(cfg)
+	msgs := make([]gnoclient.MsgCall, 0)
+
+	// for _, msg := range req.Msg.Msgs {
+	msgs = append(msgs, gnoclient.MsgCall{
+		PkgPath:  C.GoString(packagePath),
+		FuncName: C.GoString(fnc),
+		Args:     cArrayToStrings(args),
+		Send:     C.GoString(send),
+	})
+	// }
+
+	bres, err := serviceEx.Client.Call(cfg, msgs...)
 	if err != nil {
 		serviceEx.Logger.Debug("Call", zap.String("error", err.Error()))
 		return nil
@@ -566,6 +573,43 @@ func Call(packagePath *C.char, fnc *C.char, args **C.char, gasFee *C.char, gasWa
 
 	*retLen = C.int(len(bres.DeliverTx.Data))
 	return (*C.uint8_t)(unsafe.Pointer(&bres.DeliverTx.Data[0]))
+}
+
+//export Send
+func Send(address *C.uint8_t, gasFee *C.char, gasWanted C.uint64_t, send *C.char, memo *C.char, retLen *C.int) *C.uint8_t {
+	serviceEx.Logger.Debug("Send", zap.String("toAddress", crypto.AddressToBech32(crypto.AddressFromBytes(C.GoBytes(unsafe.Pointer(address), C.ADDRESS_SIZE)))), zap.String("send", C.GoString(send)))
+
+	serviceEx.Lock.RLock()
+	if serviceEx.ActiveAccount == nil {
+		serviceEx.Lock.RUnlock()
+		return nil
+	}
+	serviceEx.Lock.RUnlock()
+
+	cfg := gnoclient.BaseTxCfg{
+		GasFee:    C.GoString(gasFee),
+		GasWanted: int64(gasWanted),
+		Memo:      C.GoString(memo),
+	}
+
+	msgs := make([]gnoclient.MsgSend, 0)
+
+	// for _, msg := range req.Msg.Msgs {
+	msgs = append(msgs, gnoclient.MsgSend{
+		ToAddress: crypto.AddressFromBytes(C.GoBytes(unsafe.Pointer(address), C.ADDRESS_SIZE)),
+		Send:      C.GoString(send),
+	})
+	// }
+
+	_, err := serviceEx.Client.Send(cfg, msgs...)
+	if err != nil {
+		serviceEx.Logger.Debug("Send", zap.String("error", err.Error()))
+		return nil
+	}
+
+	// *retLen = C.int(len(bres.DeliverTx.Data))
+	// return (*C.uint8_t)(unsafe.Pointer(&bres.DeliverTx.Data[0]))
+	return nil
 }
 
 // cArrayToStrings converts a null-terminated array of C strings to a Go slice of strings.
@@ -602,14 +646,20 @@ func AddressToBech32(address *C.uint8_t) *C.char {
 }
 
 //export AddressFromBech32
-func AddressFromBech32(bech32Address *C.char) *C.uint8_t {
+func AddressFromBech32(bech32Address *C.char) unsafe.Pointer {
 	address, err := crypto.AddressFromBech32(C.GoString(bech32Address))
+	serviceEx.Logger.Debug("AddressFromBech32", zap.String("bech32Address", C.GoString(bech32Address)))
 	if err != nil {
 		serviceEx.Logger.Debug("AddressFromBech32", zap.String("error", err.Error()))
 		return nil
 	}
+	// Allocate C memory to hold the result
+	cBytes := C.malloc(C.size_t(len(address.Bytes())))
 
-	return (*C.uint8_t)(unsafe.Pointer(&address.Bytes()[0]))
+	// Copy Go bytes into the allocated C memory
+	copy((*[1 << 30]byte)(cBytes)[:], address.Bytes())
+
+	return cBytes
 }
 
 func main() {}

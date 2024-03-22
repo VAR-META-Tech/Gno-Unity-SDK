@@ -29,6 +29,9 @@ public class SDKWrapper
     [DllImport(DllPath)]
     public static extern IntPtr ListKeyInfo(out int length);
 
+    [DllImport(DllPath, CallingConvention = CallingConvention.Cdecl)]
+    public static extern IntPtr QueryAccount(byte[] address);
+
     [DllImport(DllPath)]
     public static extern IntPtr CreateAccount(
         string nameOrBech32,
@@ -39,4 +42,24 @@ public class SDKWrapper
         int index
     );
 
+    [DllImport(DllPath)]
+    public static extern IntPtr SelectAccount(string nameOrBech32);
+
+    [DllImport(DllPath)]
+    public static extern String AddressToBech32(byte[] address);
+
+    [DllImport(DllPath)]
+    public static extern IntPtr GetKeyInfoByAddress(byte[] address);
+
+    [DllImport(DllPath, CharSet = CharSet.Ansi, CallingConvention = CallingConvention.Cdecl)]
+    public static extern IntPtr Call(
+            string packagePath,
+            string fnc,
+            string[] args,
+            string gasFee,
+            ref ulong gasWanted,
+            string send,
+            string memo,
+            out int retLen
+    );
 }
